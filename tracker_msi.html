@@ -274,11 +274,7 @@ select option{background:var(--surface2);color:var(--text)}
     <div class="modal-body">
       <div class="form-group"><label>Descripción</label><input type="text" id="desc" placeholder="Ej. Apple Online Store" autocomplete="off" autocorrect="off"></div>
       <div class="form-group"><label>Tarjeta</label>
-        <select id="tarjeta"><option value="">Selecciona...</option>
-          <option>Banamex Azul</option><option>Banamex Roja</option><option>Amex</option>
-          <option>BBVA</option><option>HSBC Air</option><option>HSBC Now</option>
-          <option>Santander</option><option>Invex Volaris</option><option>Palacio</option>
-        </select>
+        <select id="tarjeta"><option value="">Selecciona...</option></select>
       </div>
       <div class="form-row">
         <div class="form-group"><label>Monto Total</label><input type="number" id="monto" placeholder="0.00" step="0.01" inputmode="decimal"></div>
@@ -368,11 +364,7 @@ select option{background:var(--surface2);color:var(--text)}
     <div class="modal-header"><div class="modal-title">Pago de Tarjeta</div><button class="modal-close" onclick="closeModal('modalPagoTDC')">×</button></div>
     <div class="modal-body">
       <div class="form-group"><label>Tarjeta</label>
-        <select id="pt-tarjeta"><option value="">Selecciona...</option>
-          <option>Banamex Azul</option><option>Banamex Roja</option><option>Amex</option>
-          <option>BBVA</option><option>HSBC Air</option><option>HSBC Now</option>
-          <option>Santander</option><option>Invex Volaris</option><option>Palacio</option><option>Liverpool</option><option>Otra</option>
-        </select>
+        <select id="pt-tarjeta"><option value="">Selecciona...</option></select>
       </div>
       <div class="form-row">
         <div class="form-group"><label>Monto a pagar</label><input type="number" id="pt-monto" placeholder="0.00" inputmode="decimal"></div>
@@ -403,9 +395,9 @@ select option{background:var(--surface2);color:var(--text)}
 <!-- TABS -->
 <div class="tabs">
   <button class="tab active" onclick="showTab('hoy')"><span class="tab-icon">🏠</span>Hoy</button>
-  <button class="tab" onclick="showTab('pagos')"><span class="tab-icon">💳</span>Pagos</button>
+  <button class="tab" onclick="showTab('pagos')"><span class="tab-icon">💰</span>Pagos</button>
   <button class="tab" onclick="showTab('gastos')"><span class="tab-icon">📋</span>Gastos</button>
-  <button class="tab" onclick="showTab('tarjetas')"><span class="tab-icon">🏦</span>Tarjetas</button>
+  <button class="tab" onclick="showTab('tarjetas')"><span class="tab-icon">💳</span>Tarjetas</button>
   <button class="tab" onclick="showTab('terceros')"><span class="tab-icon">👥</span>Terceros</button>
   <button class="tab" onclick="showTab('balance')"><span class="tab-icon">⚖️</span>Balance</button>
   <button class="tab" onclick="showTab('resumen')"><span class="tab-icon">📊</span>Resumen</button>
@@ -470,18 +462,7 @@ select option{background:var(--surface2);color:var(--text)}
         <div class="count-chip" id="countChip">—</div>
       </div>
     </div>
-    <div class="filter-row" id="msiFilterRow">
-      <button class="filter-chip active" data-val="Todos" onclick="filtrar('Todos')">Todos</button>
-      <button class="filter-chip" data-val="Banamex Azul" onclick="filtrar('Banamex Azul')">Ban. Azul</button>
-      <button class="filter-chip" data-val="Banamex Roja" onclick="filtrar('Banamex Roja')">Ban. Roja</button>
-      <button class="filter-chip" data-val="Amex" onclick="filtrar('Amex')">Amex</button>
-      <button class="filter-chip" data-val="BBVA" onclick="filtrar('BBVA')">BBVA</button>
-      <button class="filter-chip" data-val="HSBC Air" onclick="filtrar('HSBC Air')">HSBC Air</button>
-      <button class="filter-chip" data-val="HSBC Now" onclick="filtrar('HSBC Now')">HSBC Now</button>
-      <button class="filter-chip" data-val="Santander" onclick="filtrar('Santander')">Santander</button>
-      <button class="filter-chip" data-val="Invex Volaris" onclick="filtrar('Invex Volaris')">Invex</button>
-      <button class="filter-chip" data-val="Palacio" onclick="filtrar('Palacio')">Palacio</button>
-    </div>
+    <div class="filter-row" id="msiFilterRow"><button class="filter-chip active" data-val="Todos" onclick="filtrar('Todos')">Todos</button></div>
     <div id="msiTotales" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:10px">
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
         <div><div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Tarjeta</div><div style="font-size:16px;font-weight:700;color:var(--accent2)" id="msiTotalTarjeta">$0</div></div>
@@ -663,12 +644,7 @@ select option{background:var(--surface2);color:var(--text)}
         </select>
       </div>
       <div class="form-group"><label>¿Cae en tarjeta de crédito?</label>
-        <select id="fijo-tarjeta">
-          <option value="">No — pago de bolsillo</option>
-          <option>Banamex Azul</option><option>Banamex Roja</option><option>Amex</option>
-          <option>BBVA</option><option>HSBC Air</option><option>HSBC Now</option>
-          <option>Santander</option><option>Invex Volaris</option><option>Palacio</option>
-        </select>
+        <select id="fijo-tarjeta"><option value="">No — pago de bolsillo</option></select>
       </div>
       
       <input type="hidden" id="fijo-edit-id" value="">
@@ -705,12 +681,7 @@ select option{background:var(--surface2);color:var(--text)}
         </div>
       </div>
       <div class="form-group"><label>Tarjeta que cobra</label>
-        <select id="sub-tarjeta">
-          <option value="">Efectivo / Débito</option>
-          <option>Banamex Azul</option><option>Banamex Roja</option><option>Amex</option>
-          <option>BBVA</option><option>HSBC Air</option><option>HSBC Now</option>
-          <option>Santander</option><option>Invex Volaris</option><option>Palacio</option>
-        </select>
+        <select id="sub-tarjeta"><option value="">Efectivo / Débito</option></select>
       </div>
       <input type="hidden" id="sub-edit-id" value="">
       <button class="btn-primary" onclick="guardarSub()">Guardar</button>
@@ -740,10 +711,12 @@ select option{background:var(--surface2);color:var(--text)}
     <div class="modal-header"><div class="modal-title">📈 Inversión</div><button class="modal-close" onclick="closeModal('modalInversion')">×</button></div>
     <div class="modal-body">
       <div class="form-group"><label>Nombre</label><input type="text" id="inv-nombre" placeholder="Ej. Banco Azteca, Revolut..." autocomplete="off"></div>
+      <div class="form-group"><label>Saldo actual</label><input type="number" id="inv-saldo" placeholder="0.00" inputmode="decimal"></div>
       <div class="form-row">
-        <div class="form-group"><label>Saldo actual</label><input type="number" id="inv-saldo" placeholder="0.00" inputmode="decimal"></div>
-        <div class="form-group"><label>Rendimiento anual %</label><input type="number" id="inv-rend" placeholder="Ej. 12" inputmode="decimal" step="0.1"></div>
+        <div class="form-group"><label>Rendimiento anual % mín</label><input type="number" id="inv-rend-min" placeholder="Ej. 8" inputmode="decimal" step="0.1"></div>
+        <div class="form-group"><label>Rendimiento anual % máx</label><input type="number" id="inv-rend-max" placeholder="Ej. 15" inputmode="decimal" step="0.1"></div>
       </div>
+      <p style="font-size:11px;color:var(--muted);margin-top:-8px">Para rendimiento fijo pon el mismo valor en ambos. Para variable pon el rango esperado.</p>
       <div class="form-group"><label>Liquidez</label>
         <select id="inv-liquidez">
           <option value="inmediata">Inmediata</option>
@@ -1317,7 +1290,11 @@ async function eliminarMSI(id){
   try{await apiPost({action:'delete',sheet:'msis',id});}catch(e){}
 }
 function filtrar(t){filtro=t;document.querySelectorAll('#msiFilterRow .filter-chip').forEach(function(c){c.classList.toggle('active',(c.dataset.val||c.textContent.trim())===t);});renderMSIList();}
-function pagoLabel(m){if(m.pagoType==='compartido')return`<span class="pago-pill-shared">👫 ${m.conQuien} (${m.miPct}%)</span>`;if(m.pagoType==='tercero')return`<span class="pago-pill-tercero">👤 ${m.quienPaga}</span>`;return`<span class="pago-pill-solo">🙋 Solo yo</span>`;}
+function pagoLabel(m){
+  if(m.pagoType==='compartido')return`<span class="info-pill" style="background:color-mix(in srgb,var(--purple) 15%,transparent);color:var(--purple);border-color:color-mix(in srgb,var(--purple) 40%,transparent)">👫 ${m.conQuien} (${m.miPct}%)</span>`;
+  if(m.pagoType==='tercero')return`<span class="info-pill" style="background:color-mix(in srgb,var(--yellow) 15%,transparent);color:var(--yellow);border-color:color-mix(in srgb,var(--yellow) 40%,transparent)">👤 ${m.quienPaga}</span>`;
+  return'';
+}
 
 // % pagado automático basado en mes actual
 function getPagosHechos(m){
@@ -1327,8 +1304,28 @@ function getPagosHechos(m){
 function isActivoEn(m,mesIdx){return mesIdx>=m.mesInicio&&mesIdx<m.mesInicio+m.meses;}
 function terminaEn(m,mesIdx){return m.mesInicio+m.meses-1===mesIdx;}
 
+function buildFilterChips(){
+  var row=document.getElementById('msiFilterRow');
+  if(!row)return;
+  var lista=tarjetas.length>0?tarjetas:[];
+  var active=filtro||'Todos';
+  var chips='';
+  var allNames=['Todos'].concat(lista.map(function(t){return t.nombre||t;}));
+  allNames.forEach(function(nombre){
+    var label=nombre==='Todos'?'Todos':nombre.replace('Banamex ','Ban. ');
+    var isActive=active===nombre;
+    chips+='<button class="filter-chip'+(isActive?' active':'')+'" data-val="'+nombre+'" onclick="filtrar(this.dataset.val)">'+label+'</button>';
+  });
+  row.innerHTML=chips;
+}
+
 function renderMSIList(){
-  const filtered=(filtro==='Todos'?msis:msis.filter(m=>m.tarjeta===filtro)).filter(function(m){return !isMSITerminado(m);});
+  var baseList=(filtro==='Todos'?msis:msis.filter(m=>m.tarjeta===filtro)).filter(function(m){return !isMSITerminado(m);});
+  // Sort by closest to finish for all views
+  baseList=[...baseList].sort(function(a,b){
+    return (a.meses-getPagosHechos(a))-(b.meses-getPagosHechos(b));
+  });
+  const filtered=baseList;
   document.getElementById('countChip').textContent=`${msis.length} activos`;
   const el=document.getElementById('msiList');
   if(filtered.length===0){el.innerHTML=`<div class="empty"><div class="empty-icon">💳</div><div class="empty-text">Sin MSI. Toca ＋ para agregar.</div></div>`;return;}
@@ -1355,13 +1352,46 @@ function renderMSIList(){
     const finIdx=Math.min(m.mesInicio+m.meses-1,12);
     const termina=terminaEn(m,CURRENT_MONTH_IDX)?'⚠️ Último pago':'';
     return`<div class="msi-card"><div class="msi-stripe stripe-${c}"></div>
-      <div class="msi-top"><div class="msi-desc">${m.desc}${termina?` <span style="font-size:10px;color:var(--yellow)">${termina}</span>`:''}</div>
-        <div style="display:flex;align-items:center">
-          <div class="msi-amounts"><div class="msi-amount-main">${fmt(m.mensual)}</div>${m.pagoType!=='solo'?`<div class="msi-amount-mine">mi parte: ${fmt(m.miMensual)}</div>`:''}</div>
-          <button style="background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;padding:2px 4px;" onclick="editarMSI(${m.id})">✏️</button><button style="background:none;border:none;color:var(--green);font-size:11px;font-weight:600;cursor:pointer;padding:2px 6px;border:1px solid color-mix(in srgb,var(--green) 40%,transparent);border-radius:6px;" onclick="liquidarMSI(${m.id})">💰 Liquidar</button><button class="btn-del" onclick="eliminarMSI(${m.id})">×</button></div></div>
-      <div class="msi-meta"><span class="card-pill pill-${c}">${m.tarjeta}</span>${pagoLabel(m)}<span class="info-pill">${rest}/${m.meses} restantes</span><span class="info-pill">→ ${MONTHS[finIdx]}</span></div>
-      <div class="prog-bg"><div class="prog-fill" style="width:${pct}%"></div></div>
-      <div class="prog-labels"><span>${pct}% pagado (${pagosHechos}/${m.meses})</span><span>${fmt(m.montoTotal)}</span></div></div>`;
+      <!-- Fila 1: nombre + menú -->
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:15px;font-weight:600">${m.desc}${termina?` <span style="font-size:10px;color:var(--yellow)">${termina}</span>`:''}</div>
+          <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:3px">
+            ${filtro==="Todos"?`<span class="card-pill pill-${c}" style="font-size:12px">${m.tarjeta}</span>`:""}
+            ${pagoLabel(m)}
+            <span style="font-size:12px;color:var(--muted)">🏁 ${MONTHS[finIdx]}</span>
+          </div>
+        </div>
+        <div style="position:relative;flex-shrink:0">
+          <button onclick="toggleMSIMenu(${m.id},event)" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:2px 6px;line-height:1">⋯</button>
+          <div id="msi-menu-${m.id}" style="display:none;position:fixed;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 4px 16px rgba(0,0,0,.15);z-index:9999;min-width:140px;overflow:hidden">
+            <button onclick="editarMSI(${m.id});closeMSIMenus()" style="display:block;width:100%;text-align:left;background:none;border:none;padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);cursor:pointer">✏️ Editar</button>
+            <button onclick="liquidarMSI(${m.id});closeMSIMenus()" style="display:block;width:100%;text-align:left;background:none;border:none;padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--green);cursor:pointer">💰 Liquidar</button>
+            <button onclick="eliminarMSI(${m.id});closeMSIMenus()" style="display:block;width:100%;text-align:left;background:none;border:none;padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--accent2);cursor:pointer">🗑️ Eliminar</button>
+          </div>
+        </div>
+      </div>
+      <!-- Fila 2: monto grande a la derecha -->
+      <div style="text-align:right;margin-bottom:8px">
+        <div style="font-size:24px;font-weight:700;color:var(--text)">${fmt(m.mensual)}</div>
+        ${m.pagoType!=='solo'?`<div style="font-size:11px;color:var(--green)">mi parte: ${fmt(m.miMensual)}</div>`:''}
+      </div>
+
+
+      <div style="margin:8px 0 4px;display:flex;gap:2px;height:8px">${(()=>{
+        const maxD=Math.min(m.meses,24);
+        const color=rest<=1?'var(--green)':pct>=50?'var(--yellow)':'var(--accent)';
+        const filledUpTo=Math.min(CURRENT_MONTH_IDX-m.mesInicio+1,m.meses);
+        let d='';
+        for(let i=0;i<maxD;i++){
+          const filled=i<filledUpTo;
+          const isFirst=i===0,isLast=i===maxD-1;
+          const r=isFirst?'4px 2px 2px 4px':isLast?'2px 4px 4px 2px':'2px';
+          d+=`<div style="flex:1;height:100%;border-radius:${r};background:${filled?color:'color-mix(in srgb,var(--border) 80%,transparent)'}"></div>`;
+        }
+        return d;
+      })()}</div>
+      <div class="prog-labels"><span style="color:var(--muted);font-size:12px">${Math.min(CURRENT_MONTH_IDX-m.mesInicio+1,m.meses)}/${m.meses} pagos</span><span style="color:var(--muted);font-size:12px">${fmt(+m.montoTotal-(pagosHechos*+m.mensual))} pendiente</span></div></div>`;
   }).join('');
 }
 
@@ -1567,6 +1597,7 @@ function renderTarjetas(){
   const gEl=document.getElementById('utilGlobal');
   document.getElementById('tarjetasCount').textContent=`${tarjetas.length}`;
   refreshTarjetaSelects();
+  buildFilterChips();
   if(tarjetas.length===0){el.innerHTML=`<div class="empty"><div class="empty-icon">🏦</div><div class="empty-text">Toca ＋ para agregar tus tarjetas</div></div>`;gEl.style.display='none';return;}
   const totalLinea=tarjetas.reduce((s,t)=>s+(+t.linea||0),0);
   const totalUsado=tarjetas.reduce((s,t)=>s+getSaldoMSIPorTarjeta(t.nombre)+(+t.saldoExtra||0),0);
@@ -2599,12 +2630,12 @@ function renderProxMes(){
   h+='</div>';
 
   if(liberan.length>0){
-    h+='<div style="font-size:11px;font-weight:600;color:var(--green);margin-bottom:6px">🎉 Se liberan (terminan este mes)</div>';
+    h+='<div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:6px">⚠️ Último pago este mes — libres el próximo</div>';
     liberan.forEach(function(m){
       h+='<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-top:1px solid var(--border)">';
       h+='<span style="color:var(--muted)">'+m.desc+'</span><span style="color:var(--green)">+'+fmt(m.mensual)+'/mes</span></div>';
     });
-    h+='<div style="text-align:right;font-size:11px;color:var(--green);margin-top:4px;margin-bottom:10px">Total libre: +'+fmt(liberado)+'/mes</div>';
+    h+='<div style="text-align:right;font-size:11px;color:var(--muted);margin-top:4px;margin-bottom:10px">Se libera desde el próximo mes: '+fmt(liberado)+'/mes</div>';
   }
 
   if(nuevos.length>0){
@@ -2624,21 +2655,23 @@ var inversiones=[];
 async function guardarInversion(){
   var nombre=document.getElementById('inv-nombre').value.trim();
   var saldo=parseFloat(document.getElementById('inv-saldo').value)||0;
-  var rend=parseFloat(document.getElementById('inv-rend').value)||0;
+  var rendMin=parseFloat(document.getElementById('inv-rend-min').value)||0;
+  var rendMax=parseFloat(document.getElementById('inv-rend-max').value)||rendMin;
+  if(rendMax<rendMin)rendMax=rendMin;
   var liquidez=document.getElementById('inv-liquidez').value;
   var editId=document.getElementById('inv-edit-id').value;
   if(!nombre||!saldo){toast('Falta nombre o saldo','#ff9500');return;}
   if(editId){
     var inv=inversiones.find(function(x){return String(x.id)===editId;});
-    if(inv){inv.nombre=nombre;inv.saldo=saldo;inv.rend=rend;inv.liquidez=liquidez;}
+    if(inv){inv.nombre=nombre;inv.saldo=saldo;inv.rendMin=rendMin;inv.rendMax=rendMax;inv.rend=rendMax;inv.liquidez=liquidez;}
     try{await apiPost({action:'update',sheet:'inversiones',id:editId,record:inv});}catch(e){}
   } else {
-    var rec={id:Date.now(),nombre:nombre,saldo:saldo,rend:rend,liquidez:liquidez};
+    var rec={id:Date.now(),nombre:nombre,saldo:saldo,rend:rendMax,rendMin:rendMin,rendMax:rendMax,liquidez:liquidez};
     inversiones.push(rec);
     try{await apiPost({action:'write',sheet:'inversiones',record:rec});}catch(e){}
   }
   closeModal('modalInversion');
-  ['inv-nombre','inv-saldo','inv-rend'].forEach(function(id){document.getElementById(id).value='';});
+  ['inv-nombre','inv-saldo','inv-rend-min','inv-rend-max'].forEach(function(id){document.getElementById(id).value='';});
   document.getElementById('inv-edit-id').value='';
   renderInversiones();
   toast('✅ Guardado');
@@ -2655,7 +2688,8 @@ function editarInversion(id){
   var inv=inversiones.find(function(x){return x.id==id;});if(!inv)return;
   document.getElementById('inv-nombre').value=inv.nombre;
   document.getElementById('inv-saldo').value=inv.saldo;
-  document.getElementById('inv-rend').value=inv.rend||'';
+  document.getElementById('inv-rend-min').value=inv.rendMin||inv.rend||'';
+  document.getElementById('inv-rend-max').value=inv.rendMax||inv.rend||'';
   document.getElementById('inv-liquidez').value=inv.liquidez||'inmediata';
   document.getElementById('inv-edit-id').value=inv.id;
   openModal('modalInversion');
@@ -2703,6 +2737,24 @@ function renderInversiones(){
       +'<div><div style="font-size:9px;color:var(--muted);text-transform:uppercase;margin-bottom:2px">Movimientos</div>'
       +'<div style="font-size:18px;font-weight:700">'+movs.length+'</div></div>'
       +'</div>'
+      +(function(){
+        var rMin=+inv.rendMin||+inv.rend||0;
+        var rMax=+inv.rendMax||+inv.rend||0;
+        if(rMin===0&&rMax===0)return '';
+        var esFijo=rMin===rMax;
+        var mesMin=+(saldo*rMin/100/12).toFixed(0);
+        var mesMax=+(saldo*rMax/100/12).toFixed(0);
+        var anoMin=+(saldo*rMin/100).toFixed(0);
+        var anoMax=+(saldo*rMax/100).toFixed(0);
+        var mesLabel=esFijo?'+'+fmt(mesMin):'+'+fmt(mesMin)+' – '+fmt(mesMax);
+        var anoLabel=esFijo?'+'+fmt(anoMin):'+'+fmt(anoMin)+' – '+fmt(anoMax);
+        return '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">'
+          +'<div><div style="font-size:9px;color:var(--muted);text-transform:uppercase;margin-bottom:2px">Est. mes</div>'
+          +'<div style="font-size:15px;font-weight:700;color:var(--green)">'+mesLabel+'</div></div>'
+          +'<div><div style="font-size:9px;color:var(--muted);text-transform:uppercase;margin-bottom:2px">Est. año</div>'
+          +'<div style="font-size:15px;font-weight:700;color:var(--green)">'+anoLabel+'</div></div>'
+          +'</div>';
+      })()
       // Movimientos
       +(movs.length>0?
         '<div style="border-top:1px solid var(--border);padding-top:10px">'
@@ -3228,6 +3280,26 @@ function renderTerminados(){
       +'</div></div>';
   }).join('');
 }
+
+
+function toggleMSIMenu(id, e){
+  e.stopPropagation();
+  closeMSIMenus();
+  var menu=document.getElementById('msi-menu-'+id);
+  if(!menu)return;
+  var btn=e.currentTarget;
+  var r=btn.getBoundingClientRect();
+  menu.style.display='block';
+  var mw=menu.offsetWidth;
+  var left=r.right-mw;
+  if(left<8)left=8;
+  menu.style.top=(r.bottom+4)+'px';
+  menu.style.left=left+'px';
+}
+function closeMSIMenus(){
+  document.querySelectorAll('[id^="msi-menu-"]').forEach(function(m){m.style.display='none';});
+}
+document.addEventListener('click', function(){closeMSIMenus();});
 
 
 loadAll();
