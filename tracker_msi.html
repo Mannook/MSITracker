@@ -410,7 +410,7 @@ select option{background:var(--surface2);color:var(--text)}
 <div class="section active" id="tab-hoy">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
     <div class="hoy-date" id="hoyDate" style="margin-bottom:0"></div>
-    <button onclick="toggleProxMes()" id="btnProxMes" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:20px;padding:5px 12px;font-family:inherit;font-size:11px;font-weight:500;cursor:pointer">→ Próximo mes</button>
+    <button onclick="toggleProxMes()" id="btnProxMes" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:20px;padding:5px 12px;font-family:inherit;font-size:11px;font-weight:500;cursor:pointer">→ Próximo mes</button><button onclick="showTab('resumen');setTimeout(function(){document.getElementById('proyeccionResumen').scrollIntoView({behavior:'smooth'});},300)" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:20px;padding:5px 12px;font-family:inherit;font-size:11px;font-weight:500;cursor:pointer;margin-left:6px">📈 Proyección</button>
   </div>
   <div id="proxMesPanel" style="display:none;background:color-mix(in srgb,var(--accent) 6%,transparent);border:1px solid color-mix(in srgb,var(--accent) 20%,transparent);border-radius:var(--radius);padding:14px;margin-bottom:14px">
     <div style="font-size:13px;font-weight:600;margin-bottom:10px" id="proxMesTitulo"></div>
@@ -608,7 +608,9 @@ select option{background:var(--surface2);color:var(--text)}
     <div id="mesAnteriorContenido"></div>
   </div>
   <div class="kpi-grid" id="kpiGrid"></div>
-  <div class="sec-label">Por tarjeta</div>
+  <div class="sec-label" style="margin-top:16px">📈 Proyección de MSI</div>
+  <div id="proyeccionResumen"></div>
+  <div class="sec-label" style="margin-top:16px">Por tarjeta</div>
   <div class="card" id="cardBreakdown"></div>
   <div class="sec-label">Carga por mes</div>
   <div id="monthList"></div>
@@ -1408,7 +1410,7 @@ function getPagoForTarjeta(nombre){
 async function guardarPagoTDC(nombre){
   var safe=nombre.replace(/[^a-zA-Z0-9]/g,'_');
   var montoEl=document.getElementById('ptm-'+safe);
-  var fechaEl=document.getElementById('ptf-'+safe);
+  var fechaEl=document.getElementById('ptd-'+safe)||document.getElementById('ptf-'+safe);
   var quienEl=document.getElementById('ptq-'+safe);
   var badge=document.getElementById('pts-'+safe);
   if(!montoEl){toast('No se encontro el campo','#ff453a');return;}
@@ -1456,6 +1458,8 @@ async function guardarPagoTDC(nombre){
   renderHoy();
 }
 async function marcarPagado(nombre){
+  showLoader();
+  try{
   const existing=getPagoForTarjeta(nombre);
   if(existing&&(+existing.monto||0)>0){
     // Guardar en historial
@@ -1481,6 +1485,7 @@ async function marcarPagado(nombre){
   if(el)el.textContent=conMonto+' con monto';
   renderHoy();renderPagosTDC();renderHistorial();
   toast(nombre+' pagado ✅');
+  }catch(e){toast('Error al guardar','#ff453a');}finally{hideLoader();}
 }
 function renderPagosTDC(){
   var el=document.getElementById('pagosTDCList');
@@ -1900,7 +1905,60 @@ function renderResumen(){renderTendencia();renderMesAnterior();
     <div class="kpi-card"><div class="kpi-label">Mes más ligero</div><div class="kpi-value" style="color:var(--green)">${fmt(minT)}</div><div class="kpi-sub">${minIdx>=0?MONTHS[minIdx]:'-'}</div></div>`;
   const byCard={};msis.forEach(m=>{if(!byCard[m.tarjeta])byCard[m.tarjeta]={t:0,b:0,n:0};byCard[m.tarjeta].t+=+m.montoTotal||0;byCard[m.tarjeta].b+=(+m.miMensual||0)*(+m.meses||1);byCard[m.tarjeta].n++;});
   document.getElementById('cardBreakdown').innerHTML=Object.entries(byCard).sort((a,b)=>b[1].t-a[1].t).map(([card,v])=>{const c=cls(card);return`<div class="card-row"><div class="card-row-left"><div class="card-dot dot-${c}"></div><div><div class="card-name-sm">${card}</div><div class="card-count">${v.n} MSI</div></div></div><div class="card-totals"><div class="card-total-main">${fmt(v.t)}</div><div class="card-total-mine">mi parte: ${fmt(v.b)}</div></div></div>`;}).join('')||'<div style="color:var(--muted);text-align:center;padding:16px;font-size:13px">Sin datos</div>';
-  document.getElementById('monthList').innerHTML=monthly.map((v,i)=>{if(v.tarjeta===0)return'';const pT=maxT>0?(v.tarjeta/maxT*100):0,pB=maxT>0?(v.bolsillo/maxT*100):0;return`<div class="month-row"><div class="month-row-top"><div class="month-name">${i===CURRENT_MONTH_IDX?'👉 ':''}{${MONTHS[i]}}</div><div class="month-vals"><div class="month-val-main">${fmt(v.tarjeta)}</div><div class="month-val-mine">mi parte: ${fmt(v.bolsillo)}</div></div></div><div class="month-bars"><div class="month-bar-row"><div class="month-bar-label">Tarjeta</div><div class="month-bar-wrap"><div class="month-bar bar-blue" style="width:${pT}%"></div></div></div><div class="month-bar-row"><div class="month-bar-label">Mi parte</div><div class="month-bar-wrap"><div class="month-bar bar-green" style="width:${pB}%"></div></div></div></div></div>`.replace('{','').replace('}','');}).join('');
+  document.getElementById('monthList').innerHTML=monthly.map((v,i)=>{
+  if(v.tarjeta===0)return'';
+  const ingresoTotal=ingresos.reduce(function(s,x){return s+(+x.monto||0);},0)||50000;
+  const fijosTotal=fijos.reduce(function(s,f){
+    var m=+f.monto||0;
+    var freq=f.freq||'mensual';
+    return s+(freq==='quincenal'?m*2:freq==='semanal'?m*4:m);
+  },0);
+  const subsTotal=subs.reduce(function(s,sub){
+    var m=+sub.monto||0;
+    var freq=sub.freq||'mensual';
+    return s+(freq==='anual'?m/12:m);
+  },0);
+  const pT=maxT>0?(v.tarjeta/maxT*100):0;
+  const activosEste=msis.filter(m=>isActivoEn(m,i)).length;
+  const maxActivos=Math.max(...MONTHS.map((_,j)=>msis.filter(m=>isActivoEn(m,j)).length),1);
+  const terminanEste=msis.filter(m=>m.mesInicio+m.meses-1===i).length;
+  const maxTerminan=Math.max(...MONTHS.map((_,j)=>msis.filter(m=>m.mesInicio+m.meses-1===j).length),1);
+  const liberaEste=msis.filter(m=>m.mesInicio+m.meses-1===i).reduce((s,m)=>s+(+m.mensual||0),0);
+  const maxLibera=Math.max(...MONTHS.map((_,j)=>msis.filter(m=>m.mesInicio+m.meses-1===j).reduce((s,m)=>s+(+m.mensual||0),0)),1);
+  const isActual=i===CURRENT_MONTH_IDX;
+  const pActivos=Math.round(activosEste/maxActivos*100);
+  const pTerminan=Math.round(terminanEste/maxTerminan*100);
+  const pLibera=Math.round(liberaEste/maxLibera*100);
+  return`<div class="month-row" style="position:relative;${isActual?'border:2px solid var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--surface))':''}">
+    ${isActual?'':'<div style="position:absolute;top:0;left:0;height:100%;width:'+pT+'%;background:color-mix(in srgb,var(--accent) 8%,transparent);border-radius:inherit;z-index:0;pointer-events:none"></div>'}
+    <div style="position:relative;z-index:1">
+    <div class="month-row-top">
+      <div>
+        <div class="month-name" style="${isActual?'color:var(--accent);font-weight:700':''}">${isActual?'→ ':''}${MONTHS[i]}</div>
+        <div style="font-size:10px;color:${v.bolsillo/ingresoTotal>0.5?'var(--accent2)':v.bolsillo/ingresoTotal>0.3?'var(--yellow)':'var(--green)'};font-weight:600;margin-top:2px">${Math.round(v.bolsillo/ingresoTotal*100)}% del ingreso</div>
+        ${(function(){var deficit=ingresoTotal-v.bolsillo-fijosTotal-subsTotal;return '<div style="font-size:10px;font-weight:600;margin-top:1px;color:'+(deficit<0?'var(--accent2)':'var(--green)')+'">'+(deficit<0?'Déficit: -'+fmtK(Math.abs(deficit)):'Superávit: +'+fmtK(deficit))+'</div>';}())}
+      </div>
+      <div class="month-vals"><div class="month-val-main">${fmt(v.tarjeta)}</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+      <div style="text-align:center">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Activos</div>
+        <div style="font-size:22px;font-weight:800;color:var(--text);letter-spacing:-.5px">${activosEste}</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:10px;color:var(--yellow);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Terminan</div>
+        <div style="font-size:22px;font-weight:800;color:var(--yellow);letter-spacing:-.5px">${terminanEste>0?terminanEste:'—'}</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Faltantes</div>
+        <div style="font-size:22px;font-weight:800;color:var(--muted);letter-spacing:-.5px">${activosEste-terminanEste}</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:10px;color:var(--green);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Se libera</div>
+        <div style="font-size:22px;font-weight:800;color:var(--green);letter-spacing:-.5px">${liberaEste>0?'+'+fmtK(liberaEste):'—'}</div>
+      </div>
+    </div>>
+  </div></div>`.replace(/\n\s+/g,' ');replace('{','').replace('}','');}).join('');
 }
 
 // HEADER
@@ -2129,7 +2187,10 @@ function renderHistorial(){
     return '<div class="card" style="margin-bottom:10px">'
       +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
       +'<div style="font-size:13px;font-weight:600">'+mes+'</div>'
+      +'<div style="text-align:right">'
       +'<div style="font-size:13px;font-weight:600;color:var(--accent2)">'+fmt(total)+'</div>'
+      +(function(){var mi=MONTHS.indexOf(mes);if(mi<0)return '';var msiT=msis.filter(function(m){return mi>=m.mesInicio&&mi<m.mesInicio+m.meses;}).reduce(function(s,m){return s+(+m.miMensual||0);},0);return msiT>0?'<div style="font-size:10px;color:var(--muted)">MSI: '+fmtK(msiT)+'</div>':'';}())
+      +'</div>'
       +'</div>'
       +items.map(function(h){
         return '<div class="card-row" style="padding:7px 0">'
@@ -2650,10 +2711,13 @@ function renderProxMes(){
     h+='</div>';
     liberan.forEach(function(m){
       var mc=cls(m.tarjeta);
-      var msiColors={'banamex-azul':'#1a3a6e','banamex-roja':'#9b1a1a','amex':'#2d6b2d','bbva':'#004481','hsbc-air':'#9b1c1c','hsbc-now':'#c45000','santander':'#e20714','invex-volaris':'#8b008b','palacio':'#4a4a4a','liverpool':'#c8102e'};
-      var lineColor=msiColors[mc]||'var(--accent)';
-      h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border);border-left:3px solid '+lineColor+'">';
+      var msiColors={'banamex-azul':'#378ADD','banamex-roja':'#E24B4A','amex':'#2d6b2d','bbva':'#004481','hsbc-air':'#E24B4A','hsbc-now':'#c45000','santander':'#e20714','invex-volaris':'#8b008b','palacio':'#4a4a4a','liverpool':'#c8102e'};
+      var dotColor=msiColors[mc]||'var(--accent)';
+      h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border)">';
+      h+='<div style="display:flex;align-items:center;gap:10px">';
+      h+='<div style="width:8px;height:8px;border-radius:50%;background:'+dotColor+';flex-shrink:0"></div>';
       h+='<div style="font-size:13px;color:var(--text)">'+m.desc+'</div>';
+      h+='</div>';
       h+='<div style="font-size:13px;font-weight:600;color:var(--green)">'+fmtK(m.mensual)+'/mes</div>';
       h+='</div>';
     });
@@ -3314,11 +3378,126 @@ function closeMSIMenus(){
 document.addEventListener('click', function(){closeMSIMenus();});
 
 
+// ── PROYECCIÓN MSI ────────────────────────────────────────────────────────
+function renderProyeccionResumen(){
+  var el=document.getElementById('proyeccionResumen');
+  if(!el)return;
+
+  // Extend MONTHS if needed
+  while(CURRENT_MONTH_IDX+13>=MONTHS.length){MONTHS=buildMonths(MONTHS.length+6);}
+
+  // Find max mi parte to normalize bar
+  var maxMio=0;
+  for(var j=0;j<=12;j++){
+    var jdx=CURRENT_MONTH_IDX+j;
+    var jMio=msis.filter(function(m){return jdx>=m.mesInicio&&jdx<m.mesInicio+m.meses;}).reduce(function(s,m){return s+(+m.miMensual||0);},0);
+    if(jMio>maxMio)maxMio=jMio;
+  }
+
+  var rows='';
+  for(var i=0;i<=12;i++){
+    var idx=CURRENT_MONTH_IDX+i;
+    if(idx>=MONTHS.length)break;
+
+    var activos=msis.filter(function(m){return idx>=m.mesInicio&&idx<m.mesInicio+m.meses;});
+    var totalMio=activos.reduce(function(s,m){return s+(+m.miMensual||0);},0);
+
+    var idxPrev=idx-1;
+    var prevMio=msis.filter(function(m){return idxPrev>=m.mesInicio&&idxPrev<m.mesInicio+m.meses;}).reduce(function(s,m){return s+(+m.miMensual||0);},0);
+    var libera=i===0?0:Math.max(0,prevMio-totalMio);
+    var isActual=i===0;
+    var barPct=maxMio>0?Math.round(totalMio/maxMio*100):0;
+    var mesLabel=MONTHS[idx]?MONTHS[idx].replace(' 2026','').replace(' 2027',''):'-';
+
+    rows+='<div style="display:grid;grid-template-columns:70px 1fr 80px 70px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border);gap:8px;background:'+(isActual?'color-mix(in srgb,var(--accent) 6%,var(--surface))':'var(--surface)')+'">';
+    rows+='<div style="font-size:12px;font-weight:'+(isActual?'700':'500')+';color:'+(isActual?'var(--accent)':'var(--text)')+'">'+mesLabel+'</div>';
+    rows+='<div style="position:relative;height:6px;background:var(--surface3);border-radius:3px;overflow:hidden">';
+    rows+='<div style="position:absolute;left:0;top:0;height:100%;width:'+barPct+'%;background:'+(isActual?'var(--accent)':'color-mix(in srgb,var(--accent) 70%,var(--surface3))')+';border-radius:3px"></div>';
+    rows+='</div>';
+    // MSI que terminan este mes
+    var terminanEste=msis.filter(function(m){return m.mesInicio+m.meses-1===idx;}).length;
+    rows+='<div style="text-align:right;font-size:13px;font-weight:600;color:'+(isActual?'var(--accent)':'var(--text)')+'">'+fmtK(totalMio)+'</div>';
+    rows+='<div style="text-align:right">'
+      +(libera>0?'<div style="font-size:11px;color:var(--green);font-weight:600">-'+fmtK(libera)+'</div>':'')
+      +'<div style="font-size:10px;color:var(--muted)">'+activos.length+' activos</div>'
+      +(terminanEste>0?'<div style="font-size:10px;color:var(--yellow)">'+terminanEste+' terminan</div>':'')
+      +'</div>';
+    rows+='</div>';
+  }
+
+  el.innerHTML='<div style="background:var(--surface);border:1px solid var(--border);border-radius:18px;overflow:hidden">'
+    +'<div style="display:grid;grid-template-columns:70px 1fr 80px 70px;padding:8px 14px;border-bottom:1px solid var(--border);gap:8px">'
+    +'<div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase">Mes</div>'
+    +'<div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase">Tendencia</div>'
+    +'<div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;text-align:right">Mi parte</div>'
+    +'<div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;text-align:right">Libera</div>'
+    +'</div>'
+    +rows+'</div>';
+}
+function toggleProyeccion(){
+  var panel=document.getElementById('proyeccionPanel');
+  var btn=document.getElementById('btnProyeccion');
+  var isOpen=panel.style.display==='block';
+  panel.style.display=isOpen?'none':'block';
+  btn.textContent=isOpen?'📈 Proyección':'✕ Cerrar';
+  if(!isOpen)renderProyeccion();
+}
+
+function renderProyeccion(){
+  var el=document.getElementById('proyeccionContenido');
+  if(!el)return;
+
+  var months=12; // próximos 12 meses
+  var rows='';
+
+  for(var i=1;i<=months;i++){
+    var idx=CURRENT_MONTH_IDX+i;
+    if(idx>=MONTHS.length)break;
+
+    var activos=msis.filter(function(m){
+      return idx>=m.mesInicio&&idx<m.mesInicio+m.meses;
+    });
+
+    var totalTarjeta=activos.reduce(function(s,m){return s+(+m.mensual||0);},0);
+    var totalMio=activos.reduce(function(s,m){return s+(+m.miMensual||0);},0);
+
+    // Lo que se libera ese mes vs mes anterior
+    var idxPrev=idx-1;
+    var activosPrev=msis.filter(function(m){
+      return idxPrev>=m.mesInicio&&idxPrev<m.mesInicio+m.meses;
+    });
+    var prevMio=activosPrev.reduce(function(s,m){return s+(+m.miMensual||0);},0);
+    var libera=Math.max(0,prevMio-totalMio);
+
+    var pct=Math.round((1-totalMio/activosPrev.reduce(function(s,m){return s+(+m.miMensual||0);},1))*100);
+
+    rows+='<div style="display:grid;grid-template-columns:90px 1fr 1fr 80px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border);gap:8px">';
+    rows+='<div style="font-size:12px;font-weight:600;color:var(--text)">'+MONTHS[idx]+'</div>';
+    rows+='<div><div style="font-size:11px;color:var(--muted)">Tarjeta</div><div style="font-size:14px;font-weight:600">'+fmtK(totalTarjeta)+'</div></div>';
+    rows+='<div><div style="font-size:11px;color:var(--muted)">Mi parte</div><div style="font-size:14px;font-weight:600;color:var(--accent)">'+fmtK(totalMio)+'</div></div>';
+    rows+='<div style="text-align:right">'+(libera>0?'<div style="font-size:10px;color:var(--green);font-weight:600">-'+fmtK(libera)+'</div>':'')+'<div style="font-size:10px;color:var(--muted)">'+activos.length+' MSI</div></div>';
+    rows+='</div>';
+  }
+
+  el.innerHTML='<div style="background:var(--surface);border:1px solid var(--border);border-radius:18px;overflow:hidden;margin-bottom:12px">'
+    +'<div style="padding:12px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">'
+    +'<div style="font-size:14px;font-weight:700">📈 Proyección próximos meses</div>'
+    +'<div style="font-size:11px;color:var(--muted)">Mi parte mensual</div>'
+    +'</div>'
+    +rows
+    +'</div>';
+}
+
+// ── LOADER ────────────────────────────────────────────────────────────────
+function showLoader(){document.getElementById('loaderOverlay').classList.add('active');}
+function hideLoader(){document.getElementById('loaderOverlay').classList.remove('active');}
+
 loadAll();
 loadHistorial();
 loadAnualidades();
 loadExtras();
 loadInversiones();
 </script>
+<div class="loader-overlay" id="loaderOverlay"><div class="loader-spinner"></div></div>
 </body>
 </html>
