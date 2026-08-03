@@ -253,7 +253,12 @@ select option{background:var(--surface2);color:var(--text)}
 
 .hoy-kpi:nth-child(2){border-left-color:#FF4D6A}
 .hoy-kpi:nth-child(3){border-left-color:#00C896}
-.hoy-kpi:nth-child(4){border-left-color:#FFB020}</style>
+.hoy-kpi:nth-child(4){border-left-color:#FFB020}
+.loader-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:99999;align-items:center;justify-content:center}
+.loader-overlay.active{display:flex}
+.loader-spinner{width:44px;height:44px;border:3px solid rgba(255,255,255,.2);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body data-theme="dark">
@@ -583,6 +588,7 @@ select option{background:var(--surface2);color:var(--text)}
   <div id="bsubtab-resumen">
     <p style="font-size:12px;color:var(--muted);margin-bottom:14px" id="balanceMes"></p>
     <div id="balanceResumen"></div>
+    <div id="libertadCard" style="margin-top:12px"></div>
   </div>
 
   <!-- INGRESOS -->
@@ -1010,6 +1016,7 @@ function setSyncStatus(s,t){const d=document.getElementById('syncDot'),tx=docume
 
 async function apiGet(sheet){const r=await fetch(`${API}?action=read&sheet=${sheet}`);const j=await r.json();if(!j.ok)throw new Error(j.error);return j.data;}
 async function apiPost(body){
+  showLoader();
   // Use GET to avoid CORS issues with Apps Script
   const action=body.action;
   const sheet=body.sheet||'';
@@ -1019,8 +1026,8 @@ async function apiPost(body){
   if(body.records) url+='&records='+encodeURIComponent(JSON.stringify(body.records));
   const r=await fetch(url);
   const j=await r.json();
-  if(!j.ok)throw new Error(j.error);
-  return j;
+  if(!j.ok){hideLoader();throw new Error(j.error);}
+  hideLoader();return j;
 }
 
 async function loadAll(){
@@ -1892,8 +1899,15 @@ function renderHoy(){
 function calcMonthly(){return MONTHS.map((_,i)=>{let tarjeta=0,bolsillo=0;msis.forEach(m=>{if(isActivoEn(m,i)){tarjeta+=+m.mensual||0;bolsillo+=+m.miMensual||0;}});return{tarjeta,bolsillo};});}
 function renderResumen(){renderTendencia();renderMesAnterior();
   const monthly=calcMonthly();
-  const totalT=msis.reduce((s,m)=>s+(+m.montoTotal||0),0);
-  const totalB=msis.reduce((s,m)=>s+(+m.miMensual||0)*(+m.meses||1),0);
+  // Saldo pendiente real
+  const totalT=msis.filter(m=>!isMSITerminado(m)).reduce((s,m)=>{
+    const rest=Math.max(0,(+m.meses||0)-getPagosHechos(m));
+    return s+rest*(+m.mensual||0);
+  },0);
+  const totalB=msis.filter(m=>!isMSITerminado(m)).reduce((s,m)=>{
+    const rest=Math.max(0,(+m.meses||0)-getPagosHechos(m));
+    return s+rest*(+m.miMensual||0);
+  },0);
   const maxT=Math.max(...monthly.map(m=>m.tarjeta),0);
   const nonZero=monthly.filter(m=>m.tarjeta>0);
   const minT=nonZero.length?Math.min(...nonZero.map(m=>m.tarjeta)):0;
@@ -1963,9 +1977,19 @@ function renderResumen(){renderTendencia();renderMesAnterior();
 
 // HEADER
 function updateHeader(){
-  const tarjeta=msis.reduce((s,m)=>s+(+m.montoTotal||0),0);
-  const bolsillo=msis.reduce((s,m)=>s+(+m.miMensual||0)*(+m.meses||1),0);
-  const meDeben=msis.reduce((s,m)=>s+((+m.mensual-+m.miMensual)*(+m.meses||1)),0)+deudas.reduce((s,d)=>s+(d.monto-d.pagadas.length*(d.monto/d.cuotas)),0);
+  // Saldo pendiente real = pagos restantes × mensual
+  const tarjeta=msis.filter(function(m){return !isMSITerminado(m);}).reduce(function(s,m){
+    var restantes=Math.max(0,(+m.meses||0)-getPagosHechos(m));
+    return s+restantes*(+m.mensual||0);
+  },0);
+  const bolsillo=msis.filter(function(m){return !isMSITerminado(m);}).reduce(function(s,m){
+    var restantes=Math.max(0,(+m.meses||0)-getPagosHechos(m));
+    return s+restantes*(+m.miMensual||0);
+  },0);
+  const meDeben=msis.filter(function(m){return !isMSITerminado(m);}).reduce(function(s,m){
+    var restantes=Math.max(0,(+m.meses||0)-getPagosHechos(m));
+    return s+restantes*((+m.mensual||0)-(+m.miMensual||0));
+  },0)+deudas.reduce((s,d)=>s+(d.monto-d.pagadas.length*(d.monto/d.cuotas)),0);
   document.getElementById('hchipTarjeta').innerHTML=fmt(tarjeta)+'<span>tarjeta</span>';
   document.getElementById('hchipMio').innerHTML=fmt(bolsillo)+'<span>mi parte</span>';
   document.getElementById('hchipDeben').innerHTML=fmt(meDeben)+'<span>me deben</span>';
@@ -3491,6 +3515,87 @@ function renderProyeccion(){
 // ── LOADER ────────────────────────────────────────────────────────────────
 function showLoader(){document.getElementById('loaderOverlay').classList.add('active');}
 function hideLoader(){document.getElementById('loaderOverlay').classList.remove('active');}
+
+function renderLibertad(){
+  var el=document.getElementById('libertadCard');
+  if(!el)return;
+
+  var totalIngresos=ingresos.reduce(function(s,i){return s+(+i.monto||0);},0)||50000;
+  var fijosTotal=fijos.reduce(function(s,f){
+    var m=+f.monto||0;
+    var freq=f.freq||'mensual';
+    return s+(freq==='quincenal'?m*2:freq==='semanal'?m*4:m);
+  },0);
+  var subsTotal=subs.reduce(function(s,sub){
+    var freq=sub.freq||'mensual';
+    return s+(freq==='anual'?(+sub.monto||0)/12:(+sub.monto||0));
+  },0);
+
+  // Find first month with superavit
+  var mesLibertad=-1;
+  var mesZonaSana=-1;
+  var mesLibre=-1;
+
+  for(var i=CURRENT_MONTH_IDX;i<MONTHS.length;i++){
+    var msiMio=msis.filter(function(m){return i>=m.mesInicio&&i<m.mesInicio+m.meses;}).reduce(function(s,m){return s+(+m.miMensual||0);},0);
+    var superavit=totalIngresos-msiMio-fijosTotal-subsTotal;
+    var pct=msiMio/totalIngresos;
+
+    if(mesLibertad<0&&superavit>0)mesLibertad=i;
+    if(mesZonaSana<0&&pct<0.3)mesZonaSana=i;
+    if(mesLibre<0&&msiMio===0)mesLibre=i;
+  }
+
+  var msiActual=msis.filter(function(m){return CURRENT_MONTH_IDX>=m.mesInicio&&CURRENT_MONTH_IDX<m.mesInicio+m.meses;}).reduce(function(s,m){return s+(+m.miMensual||0);},0);
+  var pctActual=Math.round(msiActual/totalIngresos*100);
+
+  el.innerHTML='<div style="background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:16px;margin-bottom:10px">'
+    +'<div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">🗓️ Fechas clave</div>'
+    +'<div style="display:flex;flex-direction:column;gap:10px">'
+
+    // Superavit
+    +(mesLibertad>=0?
+      '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:color-mix(in srgb,var(--green) 8%,var(--surface2));border-radius:12px;border:1px solid color-mix(in srgb,var(--green) 20%,transparent)">'
+      +'<div><div style="font-size:13px;font-weight:600;color:var(--text)">✅ Primer superávit</div>'
+      +'<div style="font-size:11px;color:var(--muted);margin-top:2px">Ingresos > todos tus compromisos</div></div>'
+      +'<div style="font-size:16px;font-weight:800;color:var(--green)">'+MONTHS[mesLibertad]+'</div>'
+      +'</div>':'')
+
+    // Zona sana 30%
+    +(mesZonaSana>=0?
+      '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:color-mix(in srgb,var(--accent) 8%,var(--surface2));border-radius:12px;border:1px solid color-mix(in srgb,var(--accent) 20%,transparent)">'
+      +'<div><div style="font-size:13px;font-weight:600;color:var(--text)">💪 Zona financiera sana</div>'
+      +'<div style="font-size:11px;color:var(--muted);margin-top:2px">MSI bajan del 30% de tu ingreso</div></div>'
+      +'<div style="font-size:16px;font-weight:800;color:var(--accent)">'+MONTHS[mesZonaSana]+'</div>'
+      +'</div>':'')
+
+    // Sin MSI
+    +(mesLibre>=0?
+      '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:color-mix(in srgb,var(--yellow) 8%,var(--surface2));border-radius:12px;border:1px solid color-mix(in srgb,var(--yellow) 20%,transparent)">'
+      +'<div><div style="font-size:13px;font-weight:600;color:var(--text)">🏆 Sin MSI activos</div>'
+      +'<div style="font-size:11px;color:var(--muted);margin-top:2px">Libertad financiera total de MSI</div></div>'
+      +'<div style="font-size:16px;font-weight:800;color:var(--yellow)">'+MONTHS[mesLibre]+'</div>'
+      +'</div>':'')
+
+    +'</div>'
+
+    // Progress bar
+    +'<div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">'
+    +'<div style="display:flex;justify-content:space-between;margin-bottom:6px">'
+    +'<div style="font-size:11px;color:var(--muted)">MSI como % de ingreso hoy</div>'
+    +'<div style="font-size:13px;font-weight:700;color:'+(pctActual>50?'var(--accent2)':pctActual>30?'var(--yellow)':'var(--green)')+'">'+pctActual+'%</div>'
+    +'</div>'
+    +'<div style="height:8px;background:var(--surface3);border-radius:4px;overflow:hidden">'
+    +'<div style="height:100%;width:'+Math.min(pctActual,100)+'%;background:'+(pctActual>50?'var(--accent2)':pctActual>30?'var(--yellow)':'var(--green)')+';border-radius:4px;transition:width .5s"></div>'
+    +'</div>'
+    +'<div style="display:flex;justify-content:space-between;margin-top:4px">'
+    +'<div style="font-size:10px;color:var(--muted)">0%</div>'
+    +'<div style="font-size:10px;color:var(--green);font-weight:600">Meta: 30%</div>'
+    +'<div style="font-size:10px;color:var(--muted)">100%</div>'
+    +'</div>'
+    +'</div>'
+    +'</div>';
+}
 
 loadAll();
 loadHistorial();
